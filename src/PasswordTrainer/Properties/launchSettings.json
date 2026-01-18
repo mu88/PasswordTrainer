@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5276",
+      "launchUrl": "http://localhost:5276/trainer",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Trainer__DataPath": "../../tests/Tests/testData/data",
+        "Trainer__SecretsPath": "../../tests/Tests/testData/secrets"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7118;http://localhost:5276",
+      "launchUrl": "https://localhost:7118/trainer",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Trainer__DataPath": "../../tests/Tests/testData/data",
+        "Trainer__SecretsPath": "../../tests/Tests/testData/secrets"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+name: Combined CI / Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  shared_ci_cd:
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+      packages: write
+
+    uses: mu88/github-actions/.github/workflows/ci-cd.yml@a40175e6c3fc8b190b649073f86305c1d57e2946
+    with:
+      docker-attest-provenance-and-sbom: true
+      docker-publish-project: src/PasswordTrainer/PasswordTrainer.csproj
+      sonar-additional-params: ' '
+      sonar-key: mu88_PasswordTrainer
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}

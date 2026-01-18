@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Trainer</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+
+    <h1>Password Trainer</h1>
+
+    <form id="form" autocomplete="off">
+      <label for="pin">App PIN:</label>
+      <input type="password" id="pin" required>
+
+      <label for="id">Password ID / Label:</label>
+      <input type="text" id="id" required placeholder="e.g., mail, vpn">
+
+      <label for="pw">Password:</label>
+      <input type="password" id="pw" required>
+
+      <button type="submit">Check Password</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

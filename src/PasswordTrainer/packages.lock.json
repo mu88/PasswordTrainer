@@ -1,0 +1,133 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Isopoh.Cryptography.Argon2": {
+        "type": "Direct",
+        "requested": "[2.0.0, )",
+        "resolved": "2.0.0",
+        "contentHash": "8ytWN19j+qARb/XYi7KkNMm4Z8zS6tfGgnsZ1N5ihbQ5LXfyL+uYowfJxtGW9TO0S8NM2q0BaTKGOtOlsrhclQ==",
+        "dependencies": {
+          "Isopoh.Cryptography.Blake2b": "2.0.0",
+          "Isopoh.Cryptography.SecureArray": "2.0.0"
+        }
+      },
+      "mu88.Shared": {
+        "type": "Direct",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "2EBDoign1Y7fnqUXHYMgMVJx+o8VPMSe/rFk1g8dtT7EYM8TJpC0Lyw17SpFOdumxan0r4Galufjo0FAHNKftA==",
+        "dependencies": {
+          "IDisposableAnalyzers": "4.0.8",
+          "Meziantou.Analyzer": "2.0.257",
+          "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.14.0",
+          "OpenTelemetry.Extensions.Hosting": "1.14.0",
+          "OpenTelemetry.Instrumentation.AspNetCore": "1.14.0",
+          "OpenTelemetry.Instrumentation.EntityFrameworkCore": "1.0.0-beta.12",
+          "OpenTelemetry.Instrumentation.Process": "0.5.0-beta.7",
+          "OpenTelemetry.Instrumentation.Runtime": "1.14.0",
+          "StyleCop.Analyzers": "1.1.118"
+        }
+      },
+      "IDisposableAnalyzers": {
+        "type": "Transitive",
+        "resolved": "4.0.8",
+        "contentHash": "vNi4NMG0CcJyjXxiNDcQ21FwV/whM9o9OEZKD+oP7tuxAqFEzX/x5OhC3OZJqW/w+8GOtCmJPBquYgMWgz0rfQ=="
+      },
+      "Isopoh.Cryptography.Blake2b": {
+        "type": "Transitive",
+        "resolved": "2.0.0",
+        "contentHash": "Co56bjSZV13fpvYHEN04qG8hqc0rKRm4os8iEgpJ/kujvt0pYtOVhj5J0Q7HBPbHwpcChRh2CjYVCGm4nw85VQ==",
+        "dependencies": {
+          "Isopoh.Cryptography.SecureArray": "2.0.0"
+        }
+      },
+      "Isopoh.Cryptography.SecureArray": {
+        "type": "Transitive",
+        "resolved": "2.0.0",
+        "contentHash": "oWbRv/BTztKJxKFr3FBurWBBCgE1+nUTm3pwtA3Yg7Xeo4wDpaLstAwqx8HeQG3/b9yOs2qykpqfbNPJ40McIw=="
+      },
+      "Meziantou.Analyzer": {
+        "type": "Transitive",
+        "resolved": "2.0.257",
+        "contentHash": "HADbzZ4rto3boQpWyXIFFc9bxDPviscCXiSQWOTICKD1OJ4gwa9aMfANoQngOk/2en3I9YAHwQ0WXxVMzCTJ+A=="
+      },
+      "OpenTelemetry": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "aiPBAr1+0dPDItH++MQQr5UgMf4xiybruzNlAoYYMYN3UUk+mGRcoKuZy4Z4rhhWUZIpK2Xhe7wUUXSTM32duQ==",
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.14.0"
+        }
+      },
+      "OpenTelemetry.Api": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "foHci6viUw1f3gUB8qzz3Rk02xZIWMo299X0rxK0MoOWok/3dUVru+KKdY7WIoSHwRGpxGKkmAz9jIk2RFNbsQ=="
+      },
+      "OpenTelemetry.Api.ProviderBuilderExtensions": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "i/lxOM92v+zU5I0rGl5tXAGz6EJtxk2MvzZ0VN6F6L5pMqT6s6RCXnGWXg6fW+vtZJsllBlQaf/VLPTzgefJpg==",
+        "dependencies": {
+          "OpenTelemetry.Api": "1.14.0"
+        }
+      },
+      "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "7ELExeje+T/KOywHuHwZBGQNtYlepUaYRFXWgoEaT1iKpFJVwOlE1Y2+uqHI2QQmah0Ue+XgRmDy924vWHfJ6Q==",
+        "dependencies": {
+          "OpenTelemetry": "1.14.0"
+        }
+      },
+      "OpenTelemetry.Extensions.Hosting": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "ZAxkCIa3Q3YWZ1sGrolXfkhPqn2PFSz2Cel74em/fATZgY5ixlw6MQp2icmqKCz4C7M1W2G0b92K3rX8mOtFRg==",
+        "dependencies": {
+          "OpenTelemetry": "1.14.0"
+        }
+      },
+      "OpenTelemetry.Instrumentation.AspNetCore": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "NQAQpFa3a4ofPUYwxcwtNPGpuRNwwx1HM7MnLEESYjYkhfhER+PqqGywW65rWd7bJEc1/IaL+xbmHH99pYDE0A==",
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.14.0, 2.0.0)"
+        }
+      },
+      "OpenTelemetry.Instrumentation.EntityFrameworkCore": {
+        "type": "Transitive",
+        "resolved": "1.0.0-beta.12",
+        "contentHash": "L/wZDi3MXyL2OsaxykjNovTgNhGq0kVtWNcCoqzOctxYMnCUGAQHYA9XwZGpad1vnnFxHOcN3oW4qFAQuYpKUA==",
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.9.0, 2.0.0)"
+        }
+      },
+      "OpenTelemetry.Instrumentation.Process": {
+        "type": "Transitive",
+        "resolved": "0.5.0-beta.7",
+        "contentHash": "v+g5CPU/sJhyc1FTOgTaQTwvrQXquSxdndF+E3fS8SXYPLVAa2INHa8jqCFKvYp1rO+yaVizRw1gCOaDJJzauA==",
+        "dependencies": {
+          "OpenTelemetry.Api": "[1.9.0, 2.0.0)"
+        }
+      },
+      "OpenTelemetry.Instrumentation.Runtime": {
+        "type": "Transitive",
+        "resolved": "1.14.0",
+        "contentHash": "Z6o4JDOQaKv6bInAYZxuyxxfMKr6hFpwLnKEgQ+q+oBNA9Fm1sysjFCOzRzk7U0WD86LsRPXX+chv1vJIg7cfg==",
+        "dependencies": {
+          "OpenTelemetry.Api": "[1.14.0, 2.0.0)"
+        }
+      },
+      "StyleCop.Analyzers": {
+        "type": "Transitive",
+        "resolved": "1.1.118",
+        "contentHash": "Onx6ovGSqXSK07n/0eM3ZusiNdB6cIlJdabQhWGgJp3Vooy9AaLS/tigeybOJAobqbtggTamoWndz72JscZBvw=="
+      }
+    },
+    "net10.0/linux-arm64": {},
+    "net10.0/linux-x64": {}
+  }
+}
