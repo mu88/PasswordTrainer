@@ -1,13 +1,13 @@
 # PasswordTrainer
 
 ![Combined CI / Release](https://github.com/mu88/PasswordTrainer/actions/workflows/CI_CD.yml/badge.svg)
+[![GitHub Tag](https://img.shields.io/github/v/tag/mu88/passwordtrainer?sort=semver&logo=docker&label=release)](https://github.com/mu88/PasswordTrainer/pkgs/container/passwordtrainer)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=bugs)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=coverage)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 
 A self-hosted web application for securely training and verifying your memory of passwords, PINs, or passphrases. PasswordTrainer helps you practice recalling sensitive credentials without storing them in plaintext, using strong cryptography and a simple, privacy-focused workflow.
 
@@ -63,7 +63,7 @@ docker run --rm -it \
   -v $(pwd)/secrets:/secrets \
   -e Trainer__DataPath=/data \
   -e Trainer__SecretsPath=/secrets \
-  mu88/passwordtrainer:latest initialize-secrets
+  mu88/passwordtrainer:latest-chiseled initialize-secrets
 ```
 
 ### 3. Run the Application
@@ -82,7 +82,7 @@ docker run --rm -p 8080:8080 \
   -v $(pwd)/secrets:/secrets \
   -e Trainer__DataPath=/data \
   -e Trainer__SecretsPath=/secrets \
-  mu88/passwordtrainer:latest
+  mu88/passwordtrainer:latest-chiseled
 ```
 
 The web UI will be available at [http://localhost:8080/trainer](http://localhost:8080/trainer).

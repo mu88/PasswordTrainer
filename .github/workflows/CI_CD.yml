@@ -18,7 +18,7 @@ jobs:
     with:
       docker-attest-provenance-and-sbom: true
       docker-publish-project: src/PasswordTrainer/PasswordTrainer.csproj
-      sonar-additional-params: ' '
+      sonar-additional-params: ' ' # the default params require Code Coverage calculation and Sonar properties, which we do not have yet
       sonar-key: mu88_PasswordTrainer
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
