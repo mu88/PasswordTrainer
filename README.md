@@ -51,7 +51,7 @@ You will be prompted to enter:
 - Each password's ID/label and value
 
 This creates the following files in the directories specified by the options:
-- `pepper_secret` (random salt)
+- `pepper_secret` (random secret)
 - `app_pin_hash` (hashed PIN)
 - `secrets.json` (encrypted password store)
 
