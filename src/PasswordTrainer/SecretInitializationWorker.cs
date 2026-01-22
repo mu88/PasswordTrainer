@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -20,12 +21,17 @@ public class SecretInitializationWorker : BackgroundService
         _passwordTrainerOptions = options.Value;
     }
 
+    [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Safe in the particular context")]
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Console.WriteLine("=== PasswordTrainer Init Mode ===");
 
-        Console.WriteLine("Enter new App-PIN:");
-        var pin = Console.ReadLine() ?? throw new InvalidOperationException("App PIN must not be empty");
+        Console.Write("Enter new App-PIN: ");
+        var pin = ReadSecretFromConsole();
+        if (string.IsNullOrWhiteSpace(pin))
+        {
+            throw new InvalidOperationException("App PIN must not be empty");
+        }
 
         var pepperFile = _passwordTrainerOptions.GetPepperFilePath();
         var pepper = File.Exists(pepperFile) ? await File.ReadAllBytesAsync(pepperFile, stoppingToken) : Guid.NewGuid().ToByteArray();
@@ -44,20 +50,57 @@ public class SecretInitializationWorker : BackgroundService
         {
             Console.Write($"ID #{i + 1}: ");
             var id = Console.ReadLine() ?? throw new InvalidOperationException("ID must not be empty");
-            Console.WriteLine($"Password for '{id}': ");
-            var password = Console.ReadLine() ?? throw new InvalidOperationException("Password must not be empty");
+            Console.Write($"Password for '{id}': ");
+            var password = ReadSecretFromConsole();
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new InvalidOperationException("Password must not be empty");
+            }
+
             passwordDict[id] = Argon2.Hash(Encoding.UTF8.GetBytes(password), pepper);
         }
 
-        IDataProtectionProvider dataProtection = DataProtectionProvider.Create(
+        var dataProtection = DataProtectionProvider.Create(
             new DirectoryInfo(_passwordTrainerOptions.DataPath),
             cfg => cfg.SetApplicationName("PasswordTrainer"));
-        IDataProtector protector = dataProtection.CreateProtector("pw-store");
+        var protector = dataProtection.CreateProtector("pw-store");
         var encrypted = protector.Protect(JsonSerializer.Serialize(passwordDict));
         await File.WriteAllTextAsync(_passwordTrainerOptions.GetSecretsFilePath(), encrypted, stoppingToken);
 
         Console.WriteLine("=== Init Complete ===");
 
         _hostApplicationLifetime.StopApplication();
+    }
+
+    private static string ReadSecretFromConsole()
+    {
+        var sb = new StringBuilder();
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                break;
+            }
+
+            if (key.Key == ConsoleKey.Backspace)
+            {
+                if (sb.Length <= 0)
+                {
+                    continue;
+                }
+
+                sb.Length--;
+                Console.Write("\b \b");
+            }
+            else if (!char.IsControl(key.KeyChar))
+            {
+                sb.Append(key.KeyChar);
+                Console.Write("*");
+            }
+        }
+
+        return sb.ToString();
     }
 }

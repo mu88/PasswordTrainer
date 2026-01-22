@@ -5,10 +5,25 @@ form.addEventListener("submit", async e => {
   e.preventDefault();
   result.textContent = "";
 
+
+  const encoder = new TextEncoder();
+  const pin = document.getElementById("pin").value.trim();
+  const id = document.getElementById("id").value.trim();
+  const password = document.getElementById("pw").value.trim();
+
+  // Encode password as UTF-8 bytes, then base64
+  function toBase64(bytes) {
+    let binary = '';
+    for (let b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary);
+  }
+  const passwordBytes = encoder.encode(password);
+  const passwordBase64 = toBase64(passwordBytes);
+
   const payload = {
-    pin: document.getElementById("pin").value.trim(),
-    id: document.getElementById("id").value.trim(),
-    password: document.getElementById("pw").value.trim()
+    pin,
+    id,
+    password: passwordBase64
   };
 
   if (!payload.id || !payload.pin || !payload.password) {
@@ -25,7 +40,6 @@ form.addEventListener("submit", async e => {
 
     if (res.ok) {
       result.textContent = "✅ Correct";
-      navigator.vibrate?.(100);
     } else {
       result.textContent = "❌ Incorrect";
     }

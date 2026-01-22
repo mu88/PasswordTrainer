@@ -72,7 +72,7 @@ public class SystemTests
 
         var healthCheckResponse = await httpClient.GetAsync("healthz", _cancellationToken);
         var appResponse = await httpClient.GetAsync("/", _cancellationToken);
-        var passwordCheckResponse = await httpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", "helloworld"), _cancellationToken);
+        var passwordCheckResponse = await httpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", Convert.ToBase64String("helloworld"u8.ToArray())), _cancellationToken);
         var healthCheckToolResult = await container.ExecAsync(["dotnet", "/app/mu88.HealthCheck.dll", $"http://localhost:8080{SubPath}/healthz"], _cancellationToken);
 
         await LogsShouldNotContainWarningsAsync(container, _cancellationToken);

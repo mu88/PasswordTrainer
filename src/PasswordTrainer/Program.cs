@@ -121,10 +121,11 @@ app.MapPost("/check",
             return Results.BadRequest("Invalid credentials");
         }
 
-        var passwordBytes = Encoding.UTF8.GetBytes(request.Password);
+        byte[] passwordBytes = Array.Empty<byte>();
         bool passwordValid;
         try
         {
+            passwordBytes = Convert.FromBase64String(request.Password);
             passwordValid = Argon2.Verify(expectedPasswordHash, passwordBytes, pepper);
         }
         finally
@@ -132,13 +133,8 @@ app.MapPost("/check",
             Array.Clear(passwordBytes, 0, passwordBytes.Length);
         }
 
-        if (!passwordValid)
-        {
-            return Results.BadRequest("Invalid credentials");
-        }
-
-        return Results.Ok();
+        return !passwordValid ? Results.BadRequest("Invalid credentials") : Results.Ok();
     })
     .RequireRateLimiting("check-endpoint");
 
-app.Run();
+await app.RunAsync();
