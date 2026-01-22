@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 using System.Threading.RateLimiting;
@@ -78,6 +79,13 @@ app.MapHealthChecks("/healthz");
 app.MapPost("/check",
     async (CheckRequest request, IDataProtectionProvider dp, IOptions<PasswordTrainerOptions> options, CancellationToken cancellationToken) =>
     {
+        var validationContext = new ValidationContext(request);
+        var validationResults = new List<ValidationResult>();
+        if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
+        {
+            return Results.BadRequest(validationResults.Select(r => r.ErrorMessage));
+        }
+
         var pepper = await File.ReadAllBytesAsync(options.Value.GetPepperFilePath(), cancellationToken);
         var expectedPinHash = await File.ReadAllTextAsync(options.Value.GetPinHashFilePath(), cancellationToken);
         var pinBytes = Encoding.UTF8.GetBytes(request.Pin);
