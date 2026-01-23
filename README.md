@@ -85,7 +85,7 @@ docker run --rm -p 8080:8080 \
   mu88/passwordtrainer:latest-chiseled
 ```
 
-The web UI will be available at [http://localhost:8080/trainer](http://localhost:8080/trainer).
+The web UI will be available at [http://localhost:8080](http://localhost:8080).
 
 
 ### Configuration
@@ -94,6 +94,7 @@ PasswordTrainer uses the [Options pattern](src/PasswordTrainer/PasswordTrainerOp
 
 - `Trainer__DataPath`: Directory for storing encrypted secrets and data protection keys
 - `Trainer__SecretsPath`: Directory for storing secret files (`pepper_secret`, `app_pin_hash`)
+- `Trainer__PathBase`: *(Optional)* Sets a custom base path for all endpoints (e.g., `/trainer`). Must start with `/` and contain only alphanumeric characters, dashes, or slashes. If set, the web UI and API endpoints will be available under the specified path (e.g., `/trainer`).
 
 #### Rate Limiting
 
@@ -107,8 +108,6 @@ Example (in `appsettings.json` or as environment variables):
 ```json
 {
   "Trainer": {
-    "DataPath": "/data",
-    "SecretsPath": "/secrets",
     "RateLimitingPermitLimit": 5,
     "RateLimitingWindowMinutes": 10
   }
@@ -117,7 +116,21 @@ Example (in `appsettings.json` or as environment variables):
 
 This means a single IP address can only attempt to check credentials 5 times within a 10-minute window. Further requests will be blocked until the window resets.
 
-You can also configure these in [appsettings.json](src/PasswordTrainer/appsettings.json) or via Docker `-e` flags.
+#### Example `appsettings.json` configuration:
+
+```json
+{
+  "Trainer": {
+    "DataPath": "/data",
+    "SecretsPath": "/secrets",
+    "PathBase": "/trainer",
+    "RateLimitingPermitLimit": 5,
+    "RateLimitingWindowMinutes": 10
+  }
+}
+```
+
+You can also configure these via Docker `-e` flags.
 
 ### Usage Example
 

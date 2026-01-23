@@ -97,6 +97,7 @@ public class SystemTests
                         .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
                         .WithEnvironment("Trainer__DataPath", "/data")
                         .WithEnvironment("Trainer__SecretsPath", "/secrets")
+                        .WithEnvironment("Trainer__PathBase", SubPath)
                         .WithPortBinding(8080, true)
                         .WithBindMount(secretsPath, "/secrets", AccessMode.ReadOnly)
                         .WithBindMount(dataPath, "/data", AccessMode.ReadOnly)

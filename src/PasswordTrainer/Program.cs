@@ -69,7 +69,11 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 
 app.UseRateLimiter();
 
-app.UsePathBase("/trainer");
+if (!string.IsNullOrWhiteSpace(passwordTrainerOptions.PathBase))
+{
+    app.UsePathBase(passwordTrainerOptions.PathBase);
+}
+
 app.UseDefaultFiles();
 app.MapStaticAssets();
 app.UseRouting();

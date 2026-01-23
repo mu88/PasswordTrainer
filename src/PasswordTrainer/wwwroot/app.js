@@ -31,7 +31,7 @@ form.addEventListener("submit", async e => {
   }
 
   try {
-    const res = await fetch("/trainer/check", {
+    const res = await fetch("/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -47,6 +47,7 @@ form.addEventListener("submit", async e => {
     console.error(err);
   } finally {
     document.getElementById("pw").value = "";
-    document.getElementById("pw").focus();
+    document.getElementById("id").value = "";
+    document.getElementById("id").focus();
   }
 });

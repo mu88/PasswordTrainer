@@ -18,6 +18,9 @@ public class PasswordTrainerOptions
     [Range(1, 60)]
     public int RateLimitingWindowMinutes { get; init; } = 5;
 
+    [RegularExpression(@"^\/[a-zA-Z0-9\-\/]*$")]
+    public string? PathBase { get; init; }
+
     public string GetPepperFilePath() => Path.Combine(this.SecretsPath, "pepper_secret");
 
     public string GetPinHashFilePath() => Path.Combine(this.SecretsPath, "app_pin_hash");
