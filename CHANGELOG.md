@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.2.0"></a>
+## [1.2.0](https://www.github.com/mu88/PasswordTrainer/releases/tag/1.2.0) (2026-01-23)
+
+### ✨ Features
+
+* add configurable PathBase for custom endpoint paths ([8307fb2](https://www.github.com/mu88/PasswordTrainer/commit/8307fb2d8f5613b342c5e03c603564393766cf51))
+
 <a name="1.1.0"></a>
 ## [1.1.0](https://www.github.com/mu88/PasswordTrainer/releases/tag/1.1.0) (2026-01-22)
 
