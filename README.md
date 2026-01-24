@@ -63,7 +63,7 @@ docker run --rm -it \
   -v $(pwd)/secrets:/secrets \
   -e Trainer__DataPath=/data \
   -e Trainer__SecretsPath=/secrets \
-  mu88/passwordtrainer:latest-chiseled initialize-secrets
+  ghcr.io/mu88/passwordtrainer:latest-chiseled initialize-secrets
 ```
 
 ### 3. Run the Application
@@ -82,7 +82,7 @@ docker run --rm -p 8080:8080 \
   -v $(pwd)/secrets:/secrets \
   -e Trainer__DataPath=/data \
   -e Trainer__SecretsPath=/secrets \
-  mu88/passwordtrainer:latest-chiseled
+  ghcr.io/mu88/passwordtrainer:latest-chiseled
 ```
 
 The web UI will be available at [http://localhost:8080](http://localhost:8080).
