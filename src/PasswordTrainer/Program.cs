@@ -27,7 +27,7 @@ if (args.Contains("initialize-secrets", StringComparer.OrdinalIgnoreCase))
 
 var webAppBuilder = WebApplication.CreateBuilder();
 
-webAppBuilder.ConfigureOpenTelemetry("PasswordTrainer");
+webAppBuilder.ConfigureOpenTelemetryMetrics("passwordtrainer");
 webAppBuilder.Services
     .AddOptions<PasswordTrainerOptions>()
     .Bind(webAppBuilder.Configuration.GetSection(PasswordTrainerOptions.SectionName))
