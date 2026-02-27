@@ -60,8 +60,7 @@ public class SecretInitializationWorker : BackgroundService
             passwordDict[id] = Argon2.Hash(Encoding.UTF8.GetBytes(password), pepper);
         }
 
-        var dataProtection = DataProtectionProvider.Create(
-            new DirectoryInfo(_passwordTrainerOptions.DataPath),
+        var dataProtection = DataProtectionProvider.Create(new DirectoryInfo(_passwordTrainerOptions.DataPath),
             cfg => cfg.SetApplicationName("PasswordTrainer"));
         var protector = dataProtection.CreateProtector("pw-store");
         var encrypted = protector.Protect(JsonSerializer.Serialize(passwordDict));
@@ -77,7 +76,7 @@ public class SecretInitializationWorker : BackgroundService
         var sb = new StringBuilder();
         while (true)
         {
-            var key = Console.ReadKey(intercept: true);
+            var key = Console.ReadKey(true);
             if (key.Key == ConsoleKey.Enter)
             {
                 Console.WriteLine();

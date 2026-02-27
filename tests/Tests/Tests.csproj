@@ -9,26 +9,26 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="FluentAssertions"/>
-    <PackageReference Include="FluentAssertions.Web.v8"/>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FluentAssertions.Web.v8" />
     <PackageReference Include="Isopoh.Cryptography.Argon2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-    <PackageReference Include="mu88.Shared"/>
-    <PackageReference Include="NSubstitute"/>
-    <PackageReference Include="NUnit"/>
-    <PackageReference Include="NUnit3TestAdapter"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="mu88.Shared" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
     <PackageReference Include="NUnit.Analyzers">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Testcontainers"/>
+    <PackageReference Include="Testcontainers" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="testData\**\*.*"/>
+    <None Remove="testData\**\*.*" />
     <Content Include="testData\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="coverage.*.xml"/>
+    <None Remove="coverage.*.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\PasswordTrainer\PasswordTrainer.csproj" />

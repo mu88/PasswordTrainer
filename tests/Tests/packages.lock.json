@@ -464,7 +464,7 @@
         "type": "Project",
         "dependencies": {
           "Isopoh.Cryptography.Argon2": "[2.0.0, )",
-          "mu88.Shared": "[7.0.0, )"
+          "mu88.Shared": "[8.0.0, )"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {

@@ -3,7 +3,15 @@
 namespace PasswordTrainer;
 
 internal record CheckRequest(
-    [property: Required, MinLength(4), MaxLength(128)] string Pin,
-    [property: Required, MinLength(1), MaxLength(128)] string Id,
-    [property: Required, MinLength(1), MaxLength(128)] string Password
-);
+    [property: Required]
+    [property: MinLength(4)]
+    [property: MaxLength(128)]
+    string Pin,
+    [property: Required]
+    [property: MinLength(1)]
+    [property: MaxLength(128)]
+    string Id,
+    [property: Required]
+    [property: MinLength(1)]
+    [property: MaxLength(128)]
+    string Password);

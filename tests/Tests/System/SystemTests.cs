@@ -6,6 +6,7 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using FluentAssertions;
+using NUnit.Framework.Interfaces;
 using PasswordTrainer;
 
 namespace Tests.System;
@@ -36,7 +37,7 @@ public class SystemTests
         }
 
         // If the test passed, clean up the container and image. Otherwise, keep them for investigation.
-        if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed && _container is not null)
+        if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Passed && _container is not null)
         {
             await _container.StopAsync(_cancellationToken);
             await _container.DisposeAsync();
@@ -60,7 +61,8 @@ public class SystemTests
         // Act
         var healthCheckResponse = await httpClient.GetAsync("healthz", _cancellationToken);
         var appResponse = await httpClient.GetAsync("/", _cancellationToken);
-        var passwordCheckResponse = await httpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", Convert.ToBase64String("helloworld"u8.ToArray())), _cancellationToken);
+        var passwordCheckResponse =
+            await httpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", Convert.ToBase64String("helloworld"u8.ToArray())), _cancellationToken);
         var healthCheckToolResult = await _container.ExecAsync(["dotnet", "/app/mu88.HealthCheck.dll", $"http://127.0.0.1:8080{SubPath}/healthz"], _cancellationToken);
 
         // Assert
@@ -82,24 +84,25 @@ public class SystemTests
         await network.CreateAsync(cancellationToken);
 
         var container = new ContainerBuilder($"passwordtrainer:{imageTag}-chiseled")
-                        .WithNetwork(network)
-                        .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
-                        .WithEnvironment("Trainer__DataPath", "/data")
-                        .WithEnvironment("Trainer__SecretsPath", "/secrets")
-                        .WithEnvironment("Trainer__PathBase", SubPath)
-                        .WithPortBinding(8080, true)
-                        .WithBindMount(secretsPath, "/secrets", AccessMode.ReadOnly)
-                        .WithBindMount(dataPath, "/data", AccessMode.ReadOnly)
-                        .WithWaitStrategy(Wait.ForUnixContainer()
-                                              .UntilMessageIsLogged("Content root path: /app", s => s.WithTimeout(TimeSpan.FromSeconds(30))))
-                        .Build();
+            .WithNetwork(network)
+            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+            .WithEnvironment("Trainer__DataPath", "/data")
+            .WithEnvironment("Trainer__SecretsPath", "/secrets")
+            .WithEnvironment("Trainer__PathBase", SubPath)
+            .WithPortBinding(8080, true)
+            .WithBindMount(secretsPath, "/secrets", AccessMode.ReadOnly)
+            .WithBindMount(dataPath, "/data", AccessMode.ReadOnly)
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilMessageIsLogged("Content root path: /app", s => s.WithTimeout(TimeSpan.FromSeconds(30))))
+            .Build();
 
         await container.StartAsync(cancellationToken);
         return container;
     }
 
-    private static async Task BuildDockerImageOfAppAsync(string containerImageTag,
-                                                         CancellationToken cancellationToken)
+    private static async Task BuildDockerImageOfAppAsync(
+        string containerImageTag,
+        CancellationToken cancellationToken)
     {
         var rootDirectory = GetRootPath();
         var projectFile = Path.Join(rootDirectory, "src", "PasswordTrainer", "PasswordTrainer.csproj");
@@ -141,8 +144,9 @@ public class SystemTests
             .Contain("<title>Password Trainer</title>");
     }
 
-    private static async Task HealthCheckShouldBeHealthyAsync(HttpResponseMessage healthCheckResponse,
-                                                              CancellationToken cancellationToken)
+    private static async Task HealthCheckShouldBeHealthyAsync(
+        HttpResponseMessage healthCheckResponse,
+        CancellationToken cancellationToken)
     {
         healthCheckResponse.Should().Be200Ok();
         (await healthCheckResponse.Content.ReadAsStringAsync(cancellationToken))
@@ -150,8 +154,9 @@ public class SystemTests
             .Be("Healthy");
     }
 
-    private static async Task LogsShouldNotContainWarningsAsync(IContainer container,
-                                                                CancellationToken cancellationToken)
+    private static async Task LogsShouldNotContainWarningsAsync(
+        IContainer container,
+        CancellationToken cancellationToken)
     {
         var (stdout, stderr) = await container.GetLogsAsync(ct: cancellationToken);
         Console.WriteLine(stdout);

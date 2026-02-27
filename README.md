@@ -11,7 +11,6 @@
 
 A self-hosted web application for securely training and verifying your memory of passwords, PINs, or passphrases. PasswordTrainer helps you practice recalling sensitive credentials without storing them in plaintext, using strong cryptography and a simple, privacy-focused workflow.
 
-
 ## Features
 
 - **Secure password/PIN training**: Practice recalling passwords or PINs without exposing them in plaintext.
@@ -25,6 +24,7 @@ A self-hosted web application for securely training and verifying your memory of
 ## Getting Started
 
 ### Prerequisites
+
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/en-us/download) or later
 - [Docker](https://www.docker.com/) (optional, for containerized deployment)
 
@@ -46,11 +46,13 @@ dotnet run --project src/PasswordTrainer -- initialize-secrets
 ```
 
 You will be prompted to enter:
+
 - A new App-PIN (used to unlock the password store)
 - The number of passwords to store
 - Each password's ID/label and value
 
 This creates the following files in the directories specified by the options:
+
 - `pepper_secret` (random secret)
 - `app_pin_hash` (hashed PIN)
 - `secrets.json` (encrypted password store)
@@ -86,7 +88,6 @@ docker run --rm -p 8080:8080 \
 ```
 
 The web UI will be available at [http://localhost:8080](http://localhost:8080).
-
 
 ### Configuration
 

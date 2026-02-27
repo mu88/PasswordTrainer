@@ -21,9 +21,9 @@ public class PasswordTrainerOptions
     [RegularExpression(@"^\/[a-zA-Z0-9\-\/]*$")]
     public string? PathBase { get; init; }
 
-    public string GetPepperFilePath() => Path.Combine(this.SecretsPath, "pepper_secret");
+    public string GetPepperFilePath() => Path.Combine(SecretsPath, "pepper_secret");
 
-    public string GetPinHashFilePath() => Path.Combine(this.SecretsPath, "app_pin_hash");
+    public string GetPinHashFilePath() => Path.Combine(SecretsPath, "app_pin_hash");
 
-    public string GetSecretsFilePath() => Path.Combine(this.DataPath, "secrets.json");
+    public string GetSecretsFilePath() => Path.Combine(DataPath, "secrets.json");
 }
