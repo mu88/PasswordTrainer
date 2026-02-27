@@ -5,6 +5,7 @@
     <NoWarn>$(NoWarn);IDISP001;IDISP004;SA1515;MA0002;MA0011;MA0012;MA0132</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CliWrap" />
     <PackageReference Include="coverlet.msbuild">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
