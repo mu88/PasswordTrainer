@@ -1,0 +1,9 @@
+<Configuration>
+    <CodeCoverage>
+        <ModulePaths>
+            <Include>
+                <ModulePath>.*PasswordTrainer\.dll$</ModulePath>
+            </Include>
+        </ModulePaths>
+    </CodeCoverage>
+</Configuration>
