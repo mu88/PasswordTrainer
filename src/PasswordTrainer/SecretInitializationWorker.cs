@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Isopoh.Cryptography.Argon2;
@@ -8,25 +9,34 @@ using Microsoft.Extensions.Options;
 
 namespace PasswordTrainer;
 
-public class SecretInitializationWorker : BackgroundService
+internal sealed class SecretInitializationWorker : BackgroundService
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly PasswordTrainerOptions _passwordTrainerOptions;
+    private readonly IConsole _console;
+    private readonly IFile _file;
+    private readonly IDataProtectionProvider _dataProtectionProvider;
 
     public SecretInitializationWorker(
         IOptions<PasswordTrainerOptions> options,
-        IHostApplicationLifetime hostApplicationLifetime)
+        IHostApplicationLifetime hostApplicationLifetime,
+        IConsole console,
+        IFile file,
+        IDataProtectionProvider dataProtectionProvider)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _passwordTrainerOptions = options.Value;
+        _console = console;
+        _file = file;
+        _dataProtectionProvider = dataProtectionProvider;
     }
 
-    [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Safe in the particular context")]
+    [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Sequential display index – culture-invariant formatting not required")]
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Console.WriteLine("=== PasswordTrainer Init Mode ===");
+        _console.WriteLine("=== PasswordTrainer Init Mode ===");
 
-        Console.Write("Enter new App-PIN: ");
+        _console.Write("Enter new App-PIN: ");
         var pin = ReadSecretFromConsole();
         if (string.IsNullOrWhiteSpace(pin))
         {
@@ -34,52 +44,71 @@ public class SecretInitializationWorker : BackgroundService
         }
 
         var pepperFile = _passwordTrainerOptions.GetPepperFilePath();
-        var pepper = File.Exists(pepperFile) ? await File.ReadAllBytesAsync(pepperFile, stoppingToken) : Guid.NewGuid().ToByteArray();
-        if (!File.Exists(pepperFile))
+        byte[] pepper;
+        if (_file.Exists(pepperFile))
         {
-            await File.WriteAllBytesAsync(pepperFile, pepper, stoppingToken);
+            pepper = await _file.ReadAllBytesAsync(pepperFile, stoppingToken);
+        }
+        else
+        {
+            pepper = RandomNumberGenerator.GetBytes(32);
+            await _file.WriteAllBytesAsync(pepperFile, pepper, stoppingToken);
         }
 
-        var pinHash = Argon2.Hash(Encoding.UTF8.GetBytes(pin), pepper);
-        await File.WriteAllTextAsync(_passwordTrainerOptions.GetPinHashFilePath(), pinHash, stoppingToken);
+        var pinHash = HashWithClear(Encoding.UTF8.GetBytes(pin), pepper);
+        await _file.WriteAllTextAsync(_passwordTrainerOptions.GetPinHashFilePath(), pinHash, stoppingToken);
 
         var passwordDict = new Dictionary<string, string>(StringComparer.Ordinal);
-        Console.Write("How many passwords? ");
-        int.TryParse(Console.ReadLine(), CultureInfo.InvariantCulture, out var count);
+        _console.Write("How many passwords? ");
+        if (!int.TryParse(_console.ReadLine(), CultureInfo.InvariantCulture, out var count))
+        {
+            throw new InvalidOperationException("Please enter a valid number.");
+        }
+
         for (var i = 0; i < count; ++i)
         {
-            Console.Write($"ID #{i + 1}: ");
-            var id = Console.ReadLine() ?? throw new InvalidOperationException("ID must not be empty");
-            Console.Write($"Password for '{id}': ");
+            _console.Write($"ID #{i + 1}: ");
+            var id = _console.ReadLine() ?? throw new InvalidOperationException("ID must not be empty");
+            _console.Write($"Password for '{id}': ");
             var password = ReadSecretFromConsole();
             if (string.IsNullOrWhiteSpace(password))
             {
                 throw new InvalidOperationException("Password must not be empty");
             }
 
-            passwordDict[id] = Argon2.Hash(Encoding.UTF8.GetBytes(password), pepper);
+            passwordDict[id] = HashWithClear(Encoding.UTF8.GetBytes(password), pepper);
         }
 
-        var dataProtection = DataProtectionProvider.Create(new DirectoryInfo(_passwordTrainerOptions.DataPath),
-            cfg => cfg.SetApplicationName("PasswordTrainer"));
-        var protector = dataProtection.CreateProtector("pw-store");
+        var protector = _dataProtectionProvider.CreateProtector("pw-store");
         var encrypted = protector.Protect(JsonSerializer.Serialize(passwordDict));
-        await File.WriteAllTextAsync(_passwordTrainerOptions.GetSecretsFilePath(), encrypted, stoppingToken);
+        await _file.WriteAllTextAsync(_passwordTrainerOptions.GetSecretsFilePath(), encrypted, stoppingToken);
 
-        Console.WriteLine("=== Init Complete ===");
+        _console.WriteLine("=== Init Complete ===");
 
         _hostApplicationLifetime.StopApplication();
     }
 
-    private static string ReadSecretFromConsole()
+    private static string HashWithClear(byte[] bytes, byte[] pepper)
+    {
+        try
+        {
+            return Argon2.Hash(bytes, pepper);
+        }
+        finally
+        {
+            Array.Clear(bytes, 0, bytes.Length);
+        }
+    }
+
+    private string ReadSecretFromConsole()
     {
         var sb = new StringBuilder();
         while (true)
         {
-            var key = Console.ReadKey(true);
+            var key = _console.ReadKey(true);
             if (key.Key == ConsoleKey.Enter)
             {
-                Console.WriteLine();
+                _console.WriteLine();
                 break;
             }
 
@@ -91,12 +120,12 @@ public class SecretInitializationWorker : BackgroundService
                 }
 
                 sb.Length--;
-                Console.Write("\b \b");
+                _console.Write("\b \b");
             }
             else if (!char.IsControl(key.KeyChar))
             {
                 sb.Append(key.KeyChar);
-                Console.Write("*");
+                _console.Write("*");
             }
         }
 

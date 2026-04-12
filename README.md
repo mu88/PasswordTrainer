@@ -8,8 +8,10 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=bugs)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=mu88_PasswordTrainer&metric=coverage)](https://sonarcloud.io/summary/new_code?id=mu88_PasswordTrainer)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fmu88%2FPasswordTrainer%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/mu88/PasswordTrainer/main)
 
-A self-hosted web application for securely training and verifying your memory of passwords, PINs, or passphrases. PasswordTrainer helps you practice recalling sensitive credentials without storing them in plaintext, using strong cryptography and a simple, privacy-focused workflow.
+A self-hosted web applicationfor securely training and verifying your memory of passwords, PINs, or passphrases. PasswordTrainer helps you practice recalling sensitive credentials without storing them in plaintext, using strong cryptography and a simple, privacy-focused workflow.
 
 ## Features
 
@@ -101,21 +103,21 @@ PasswordTrainer uses the [Options pattern](src/PasswordTrainer/PasswordTrainerOp
 
 To protect against brute-force attacks, PasswordTrainer uses ASP.NET Core's Rate Limiting Middleware for the `/check` endpoint. You can configure the following parameters:
 
-- `Trainer__RateLimitingPermitLimit`: Maximum number of allowed requests per window (default: 5)
-- `Trainer__RateLimitingWindowMinutes`: Time window in minutes for rate limiting (default: 10)
+- `Trainer__RateLimitingPermitLimit`: Maximum number of allowed requests per window (default: 15)
+- `Trainer__RateLimitingWindowMinutes`: Time window in minutes for rate limiting (default: 5)
 
 Example (in `appsettings.json` or as environment variables):
 
 ```json
 {
   "Trainer": {
-    "RateLimitingPermitLimit": 5,
-    "RateLimitingWindowMinutes": 10
+    "RateLimitingPermitLimit": 15,
+    "RateLimitingWindowMinutes": 5
   }
 }
 ```
 
-This means a single IP address can only attempt to check credentials 5 times within a 10-minute window. Further requests will be blocked until the window resets.
+This means a single IP address can only attempt to check credentials 15 times within a 5-minute window. Further requests will be blocked until the window resets.
 
 #### Example `appsettings.json` configuration:
 
@@ -125,8 +127,8 @@ This means a single IP address can only attempt to check credentials 5 times wit
     "DataPath": "/data",
     "SecretsPath": "/secrets",
     "PathBase": "/trainer",
-    "RateLimitingPermitLimit": 5,
-    "RateLimitingWindowMinutes": 10
+    "RateLimitingPermitLimit": 15,
+    "RateLimitingWindowMinutes": 5
   }
 }
 ```

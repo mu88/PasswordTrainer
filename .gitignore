@@ -148,6 +148,12 @@ coverage*.xml
 !coverage.settings.xml
 coverage*.info
 
+# dotnet-coverage output files
+merged.xml
+
+# Stryker mutation testing
+StrykerOutput/
+
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml

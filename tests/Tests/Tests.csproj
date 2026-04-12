@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CliWrap" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
 
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="FluentAssertions.Web.v8" />

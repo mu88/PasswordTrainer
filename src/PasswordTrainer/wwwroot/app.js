@@ -12,9 +12,9 @@ form.addEventListener("submit", async e => {
   result.textContent = "";
 
   const encoder = new TextEncoder();
-  const pin = document.getElementById("pin").value.trim();
-  const id = document.getElementById("id").value.trim();
-  const password = document.getElementById("pw").value.trim();
+  const pin = document.getElementById("pin").value;
+  const id = document.getElementById("id").value;
+  const password = document.getElementById("pw").value;
 
   const passwordBytes = encoder.encode(password);
   const passwordBase64 = toBase64(passwordBytes);

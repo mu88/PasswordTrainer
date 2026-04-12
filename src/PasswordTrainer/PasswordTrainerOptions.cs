@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PasswordTrainer;
 
-public class PasswordTrainerOptions
+internal sealed class PasswordTrainerOptions
 {
     public const string SectionName = "Trainer";
 
