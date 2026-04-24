@@ -9,9 +9,8 @@
       "progress",
       "dashboard"
     ],
-    "dashboard": {
-      "project": "github.com/mu88/PasswordTrainer",
-      "version": "main"
+    "project-info": {
+      "name": "github.com/mu88/PasswordTrainer"
     },
     "mutate": [
       "!**/Program.cs"
