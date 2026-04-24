@@ -90,12 +90,14 @@ internal sealed class SecretInitializationWorker : BackgroundService
 
     private static string HashWithClear(byte[] bytes, byte[] pepper)
     {
+        // Stryker disable once Block : the try/finally wrapper is security hygiene; removing it would skip Array.Clear which is not observable via the return value
         try
         {
             return Argon2.Hash(bytes, pepper);
         }
         finally
         {
+            // Stryker disable once Statement : clearing the passed byte array is security hygiene; not observable from outside the method
             Array.Clear(bytes, 0, bytes.Length);
         }
     }

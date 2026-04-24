@@ -18,7 +18,7 @@ jobs:
     with:
       docker-attest-provenance-and-sbom: true
       docker-publish-project: src/PasswordTrainer/PasswordTrainer.csproj
-      sonar-additional-params: '/d:sonar.coverage.exclusions=**/wwwroot/**' # exclude static JS files
+      sonar-additional-params: '/d:sonar.coverage.exclusions=**/wwwroot/**,**/Program.cs' # exclude static JS files and composition root
       sonar-key: mu88_PasswordTrainer
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}

@@ -46,4 +46,24 @@ public class PasswordTrainerOptionsTests
         // Assert
         result.Should().Be(Path.Combine("/data", "secrets.json"));
     }
+
+    [Test]
+    public void DataPath_DefaultValue_ShouldBeEmpty()
+    {
+        // Arrange / Act
+        var options = new PasswordTrainerOptions();
+
+        // Assert
+        options.DataPath.Should().Be(string.Empty);
+    }
+
+    [Test]
+    public void SecretsPath_DefaultValue_ShouldBeEmpty()
+    {
+        // Arrange / Act
+        var options = new PasswordTrainerOptions();
+
+        // Assert
+        options.SecretsPath.Should().Be(string.Empty);
+    }
 }

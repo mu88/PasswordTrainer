@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'feature/ai-*'
 
 jobs:
   mutation-testing:
@@ -27,7 +28,7 @@ jobs:
         run: |
           dotnet tool run dotnet-stryker \
             --dashboard-api-key "${{ secrets.STRYKER_DASHBOARD_API_KEY }}" \
-            --version "main" \
+            --version "${{ github.ref_name }}" \
             --output ${{ runner.temp }}/Stryker/
 
       - name: Archive mutation testing results

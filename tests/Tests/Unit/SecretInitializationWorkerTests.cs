@@ -1,5 +1,6 @@
 using System.Text;
 using FluentAssertions;
+using Isopoh.Cryptography.Argon2;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -70,6 +71,12 @@ public class SecretInitializationWorkerTests
             Arg.Any<string>(),
             Arg.Any<CancellationToken>());
         _lifetime.Received(1).StopApplication();
+        _console.Received(1).WriteLine("=== PasswordTrainer Init Mode ===");
+        _console.Received(1).Write("Enter new App-PIN: ");
+        _console.Received(1).Write("How many passwords? ");
+        _console.Received(1).WriteLine("=== Init Complete ===");
+        // Verify the newline written after masked PIN input (ReadSecretFromConsole on Enter)
+        _console.Received(1).WriteLine();
     }
 
     [Test]
@@ -120,6 +127,8 @@ public class SecretInitializationWorkerTests
         _dataProtector.Received(1).Protect(
             Arg.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes).Contains("my-id")));
         _lifetime.Received(1).StopApplication();
+        _console.Received(1).Write("ID #1: ");
+        _console.Received(1).Write("Password for 'my-id': ");
     }
 
     [Test]
@@ -195,12 +204,31 @@ public class SecretInitializationWorkerTests
             Enter());
         _console.ReadLine().Returns("1", "my-id");
 
+        // Capture pepper and hash so we can verify backspace actually removed the char
+        var capturedPepper = Array.Empty<byte>();
+        _file.When(f => f.WriteAllBytesAsync(
+                Path.Combine(SecretsPath, "pepper_secret"), Arg.Any<byte[]>(), Arg.Any<CancellationToken>()))
+            .Do(ci => capturedPepper = ci.ArgAt<byte[]>(1));
+        var capturedPinHash = string.Empty;
+        _file.When(f => f.WriteAllTextAsync(
+                Path.Combine(SecretsPath, "app_pin_hash"), Arg.Any<string>(), Arg.Any<CancellationToken>()))
+            .Do(ci => capturedPinHash = ci.ArgAt<string>(1));
+
         // Act
         await _sut.StartAsync(CancellationToken.None);
         await _sut.ExecuteTask!;
 
         // Assert — no exception thrown means PIN "1345" was accepted
         _lifetime.Received(1).StopApplication();
+        // Verify that the hash was computed for "1345" (not "12345" or "12\0345")
+        capturedPepper.Should().NotBeEmpty();
+        capturedPinHash.Should().NotBeNullOrEmpty();
+        Argon2.Verify(capturedPinHash, Encoding.UTF8.GetBytes("1345"), capturedPepper)
+            .Should().BeTrue("the hash must match PIN '1345' — backspace must decrement sb.Length");
+        // Verify that the backspace visual feedback was written
+        _console.Received(1).Write("\b \b");
+        // Verify that exactly 5 chars were echoed as '*' for PIN (1,2,3,4,5) plus 1 for password 'p'
+        _console.Received(6).Write("*");
     }
 
     [Test]
@@ -225,6 +253,27 @@ public class SecretInitializationWorkerTests
 
         // Assert
         _lifetime.Received(1).StopApplication();
+        // Verify no backspace feedback was written (the Backspace on empty buffer is silently ignored)
+        _console.DidNotReceive().Write("\b \b");
+        // 4 '*' for PIN + 1 '*' for password 'p'
+        _console.Received(5).Write("*");
+    }
+
+    [Test]
+    public async Task ExecuteAsync_WithNullIdFromConsole_ShouldThrowInvalidOperationException()
+    {
+        // Arrange — ReadLine returns null for the ID slot, triggering the null-guard
+        _file.Exists(Arg.Any<string>()).Returns(false);
+        SetupConsoleForPin("1234");
+        _console.ReadLine().Returns("1", (string?)null); // count=1, then null for ID
+
+        // Act
+        await _sut.StartAsync(CancellationToken.None);
+        var act = async () => await _sut.ExecuteTask!;
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("ID must not be empty");
     }
 
     private static ConsoleKeyInfo KeyInfo(char c) =>

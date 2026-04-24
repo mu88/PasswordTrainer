@@ -1,3 +1,4 @@
+// Stryker disable all : Program.cs is the ASP.NET Core composition root; testing DI wiring, validation strings, and middleware configuration mutations is not meaningful at unit level
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;

@@ -158,8 +158,9 @@ public class PasswordCheckServiceTests
         var result = await _sut.CheckAsync(request, CancellationToken.None);
 
         // Assert
-        result.Should().BeOfType<ProblemHttpResult>()
-            .Which.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        var problem = result.Should().BeOfType<ProblemHttpResult>().Subject;
+        problem.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+        problem.ProblemDetails.Detail.Should().Be("Server error");
     }
 
     [Test]
@@ -185,9 +186,12 @@ public class PasswordCheckServiceTests
         // Act
         var result = await _sut.CheckAsync(request, CancellationToken.None);
 
-        // Assert
+        // Assert – must be a validation error (IEnumerable of messages), not the auth "Invalid credentials" string.
+        // This distinguishes validateAllProperties=true (MinLength checked) from =false (MinLength skipped).
         result.Should().BeAssignableTo<IStatusCodeHttpResult>()
             .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        result.Should().BeAssignableTo<IValueHttpResult>()
+            .Which.Value.Should().BeAssignableTo<IEnumerable<string?>>();
     }
 
     [Test]
