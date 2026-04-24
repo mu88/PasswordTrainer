@@ -1,0 +1,60 @@
+name: Fix Stryker Config on Main (one-shot)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename and update stryker config
+        run: |
+          git mv .stryker-config.json stryker-config.json
+          cat > stryker-config.json << 'EOF'
+          {
+            "stryker-config": {
+              "project": "src/PasswordTrainer/PasswordTrainer.csproj",
+              "test-projects": [
+                "tests/Tests/Tests.csproj"
+              ],
+              "reporters": [
+                "html",
+                "progress",
+                "dashboard"
+              ],
+              "project-info": {
+                "name": "github.com/mu88/PasswordTrainer"
+              },
+              "mutate": [
+                "!**/Program.cs"
+              ],
+              "ignore-methods": [
+                "logger.*",
+                "Logger.*"
+              ]
+            }
+          }
+          EOF
+
+      - name: Commit and push to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(ci): enable Stryker dashboard reporting
+
+          The config file was named .stryker-config.json (dot-prefix) which Stryker
+          does not auto-detect. Rename to stryker-config.json so the dashboard reporter
+          and project-info are picked up. Also migrate from the deprecated dashboard.project
+          format to the current project-info.name format used by all other repos.
+
+          Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+          git push origin main
