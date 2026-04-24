@@ -1,0 +1,23 @@
+{
+  "stryker-config": {
+    "project": "src/PasswordTrainer/PasswordTrainer.csproj",
+    "test-projects": [
+      "tests/Tests/Tests.csproj"
+    ],
+    "reporters": [
+      "html",
+      "progress",
+      "dashboard"
+    ],
+    "project-info": {
+      "name": "github.com/mu88/PasswordTrainer"
+    },
+    "mutate": [
+      "!**/Program.cs"
+    ],
+    "ignore-methods": [
+      "logger.*",
+      "Logger.*"
+    ]
+  }
+}
