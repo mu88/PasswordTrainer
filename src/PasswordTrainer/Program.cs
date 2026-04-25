@@ -1,10 +1,6 @@
 // Stryker disable all : Program.cs is the ASP.NET Core composition root; testing DI wiring, validation strings, and middleware configuration mutations is not meaningful at unit level
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using mu88.Shared.OpenTelemetry;
 using PasswordTrainer;
@@ -30,12 +26,8 @@ webAppBuilder.Services
     .ValidateOnStart();
 webAppBuilder.Services.AddHealthChecks();
 webAppBuilder.Services.AddSingleton<IFile, SystemFile>();
+webAppBuilder.Services.AddSingleton<ISecretsEncryption, AesGcmSecretsEncryption>();
 webAppBuilder.Services.AddScoped<PasswordCheckService>();
-webAppBuilder.Services.AddDataProtection().SetApplicationName("PasswordTrainer");
-webAppBuilder.Services.AddOptions<KeyManagementOptions>()
-    .Configure<IOptions<PasswordTrainerOptions>>((kmo, trainerOptions) =>
-        kmo.XmlRepository = new FileSystemXmlRepository(
-            new DirectoryInfo(trainerOptions.Value.DataPath), NullLoggerFactory.Instance));
 webAppBuilder.Services.AddRateLimiter(rateLimiterOptions =>
 {
     rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

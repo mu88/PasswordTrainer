@@ -1,7 +1,6 @@
 using System.Text;
 using FluentAssertions;
 using Isopoh.Cryptography.Argon2;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -19,8 +18,7 @@ public class SecretInitializationWorkerTests
 
     private IConsole _console = null!;
     private IFile _file = null!;
-    private IDataProtectionProvider _dataProtectionProvider = null!;
-    private IDataProtector _dataProtector = null!;
+    private ISecretsEncryption _secretsEncryption = null!;
     private IHostApplicationLifetime _lifetime = null!;
     private SecretInitializationWorker _sut = null!;
 
@@ -29,17 +27,15 @@ public class SecretInitializationWorkerTests
     {
         _console = Substitute.For<IConsole>();
         _file = Substitute.For<IFile>();
-        _dataProtectionProvider = Substitute.For<IDataProtectionProvider>();
-        _dataProtector = Substitute.For<IDataProtector>();
+        _secretsEncryption = Substitute.For<ISecretsEncryption>();
         _lifetime = Substitute.For<IHostApplicationLifetime>();
 
-        _dataProtectionProvider.CreateProtector("pw-store").Returns(_dataProtector);
-        _dataProtector.Protect(Arg.Any<byte[]>()).Returns(Array.Empty<byte>());
+        _secretsEncryption.Encrypt(Arg.Any<byte[]>(), Arg.Any<string>()).Returns(string.Empty);
 
         var options = Substitute.For<IOptions<PasswordTrainerOptions>>();
         options.Value.Returns(new PasswordTrainerOptions { DataPath = DataPath, SecretsPath = SecretsPath });
 
-        _sut = new SecretInitializationWorker(options, _lifetime, _console, _file, _dataProtectionProvider);
+        _sut = new SecretInitializationWorker(options, _lifetime, _console, _file, _secretsEncryption);
     }
 
     [TearDown]
@@ -124,8 +120,9 @@ public class SecretInitializationWorkerTests
         await _sut.ExecuteTask!;
 
         // Assert
-        _dataProtector.Received(1).Protect(
-            Arg.Is<byte[]>(bytes => Encoding.UTF8.GetString(bytes).Contains("my-id")));
+        _secretsEncryption.Received(1).Encrypt(
+            Arg.Any<byte[]>(),
+            Arg.Is<string>(json => json.Contains("my-id")));
         _lifetime.Received(1).StopApplication();
         _console.Received(1).Write("ID #1: ");
         _console.Received(1).Write("Password for 'my-id': ");

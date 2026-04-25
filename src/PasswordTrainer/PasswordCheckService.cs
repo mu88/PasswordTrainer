@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 using Isopoh.Cryptography.Argon2;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
 namespace PasswordTrainer;
@@ -12,18 +11,18 @@ internal sealed partial class PasswordCheckService
     private const string InvalidCredentials = "Invalid credentials";
 
     private readonly IFile _file;
-    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly ISecretsEncryption _secretsEncryption;
     private readonly IOptions<PasswordTrainerOptions> _options;
     private readonly ILogger<PasswordCheckService> _logger;
 
     public PasswordCheckService(
         IFile file,
-        IDataProtectionProvider dataProtectionProvider,
+        ISecretsEncryption secretsEncryption,
         IOptions<PasswordTrainerOptions> options,
         ILogger<PasswordCheckService> logger)
     {
         _file = file;
-        _dataProtectionProvider = dataProtectionProvider;
+        _secretsEncryption = secretsEncryption;
         _options = options;
         _logger = logger;
     }
@@ -50,8 +49,8 @@ internal sealed partial class PasswordCheckService
             string decrypted;
             try
             {
-                var protector = _dataProtectionProvider.CreateProtector("pw-store");
-                decrypted = protector.Unprotect(
+                decrypted = _secretsEncryption.Decrypt(
+                    pepper,
                     await _file.ReadAllTextAsync(_options.Value.GetSecretsFilePath(), cancellationToken));
             }
             catch (Exception ex)

@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Isopoh.Cryptography.Argon2;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 
 namespace PasswordTrainer;
@@ -15,20 +14,20 @@ internal sealed class SecretInitializationWorker : BackgroundService
     private readonly PasswordTrainerOptions _passwordTrainerOptions;
     private readonly IConsole _console;
     private readonly IFile _file;
-    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly ISecretsEncryption _secretsEncryption;
 
     public SecretInitializationWorker(
         IOptions<PasswordTrainerOptions> options,
         IHostApplicationLifetime hostApplicationLifetime,
         IConsole console,
         IFile file,
-        IDataProtectionProvider dataProtectionProvider)
+        ISecretsEncryption secretsEncryption)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _passwordTrainerOptions = options.Value;
         _console = console;
         _file = file;
-        _dataProtectionProvider = dataProtectionProvider;
+        _secretsEncryption = secretsEncryption;
     }
 
     [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Sequential display index – culture-invariant formatting not required")]
@@ -79,8 +78,7 @@ internal sealed class SecretInitializationWorker : BackgroundService
             passwordDict[id] = HashWithClear(Encoding.UTF8.GetBytes(password), pepper);
         }
 
-        var protector = _dataProtectionProvider.CreateProtector("pw-store");
-        var encrypted = protector.Protect(JsonSerializer.Serialize(passwordDict));
+        var encrypted = _secretsEncryption.Encrypt(pepper, JsonSerializer.Serialize(passwordDict));
         await _file.WriteAllTextAsync(_passwordTrainerOptions.GetSecretsFilePath(), encrypted, stoppingToken);
 
         _console.WriteLine("=== Init Complete ===");

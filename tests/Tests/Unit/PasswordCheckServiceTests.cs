@@ -2,7 +2,6 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Isopoh.Cryptography.Argon2;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,9 +20,8 @@ public class PasswordCheckServiceTests
     private const string ValidPin = "1234";
     private const string ValidId = "svc-test";
 
-    // DataProtectionCommonExtensions.Unprotect(string) Base64Url-decodes before calling Unprotect(byte[]).
-    // The file content must be a valid Base64Url string; the mock intercepts the byte[] overload.
-    private const string EncryptedSecretsFileContent = "dGVzdA"; // base64url of "test", content doesn't matter
+    // Arbitrary non-empty string — the mock intercepts Decrypt() before any real parsing occurs.
+    private const string EncryptedSecretsFileContent = "encrypted-payload";
 
     private static readonly byte[] Pepper = new byte[32]; // all-zero pepper for test hashes
     private static readonly string ValidPasswordBase64 = Convert.ToBase64String("svcpw"u8.ToArray());
@@ -31,8 +29,7 @@ public class PasswordCheckServiceTests
     private static string _passwordHash = null!;
 
     private IFile _file = null!;
-    private IDataProtectionProvider _dp = null!;
-    private IDataProtector _protector = null!;
+    private ISecretsEncryption _secretsEncryption = null!;
     private IOptions<PasswordTrainerOptions> _options = null!;
     private PasswordCheckService _sut = null!;
 
@@ -51,9 +48,7 @@ public class PasswordCheckServiceTests
     public void SetUp()
     {
         _file = Substitute.For<IFile>();
-        _dp = Substitute.For<IDataProtectionProvider>();
-        _protector = Substitute.For<IDataProtector>();
-        _dp.CreateProtector("pw-store").Returns(_protector);
+        _secretsEncryption = Substitute.For<ISecretsEncryption>();
 
         var opts = new PasswordTrainerOptions { DataPath = "/data", SecretsPath = "/secrets" };
         _options = Substitute.For<IOptions<PasswordTrainerOptions>>();
@@ -71,10 +66,9 @@ public class PasswordCheckServiceTests
         _file.ReadAllTextAsync(opts.GetSecretsFilePath(), Arg.Any<CancellationToken>())
             .Returns(EncryptedSecretsFileContent);
 
-        // Unprotect(string) extension method Base64Url-decodes then calls Unprotect(byte[]) — mock the byte[] overload.
-        _protector.Unprotect(Arg.Any<byte[]>()).Returns(Encoding.UTF8.GetBytes(secretsJson));
+        _secretsEncryption.Decrypt(Arg.Any<byte[]>(), EncryptedSecretsFileContent).Returns(secretsJson);
 
-        _sut = new PasswordCheckService(_file, _dp, _options, NullLogger<PasswordCheckService>.Instance);
+        _sut = new PasswordCheckService(_file, _secretsEncryption, _options, NullLogger<PasswordCheckService>.Instance);
     }
 
     [Test]
@@ -151,7 +145,8 @@ public class PasswordCheckServiceTests
     public async Task CheckAsync_WhenDecryptionFails_ReturnsProblem()
     {
         // Arrange
-        _protector.Unprotect(Arg.Any<byte[]>()).Throws(new InvalidOperationException("corrupted"));
+        _secretsEncryption.Decrypt(Arg.Any<byte[]>(), Arg.Any<string>())
+            .Throws(new InvalidOperationException("corrupted"));
         var request = new CheckRequest(ValidPin, ValidId, ValidPasswordBase64);
 
         // Act

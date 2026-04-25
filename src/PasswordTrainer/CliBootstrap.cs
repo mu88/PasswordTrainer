@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Options;
 using PasswordTrainer;
 
 namespace PasswordTrainer;
@@ -12,12 +10,10 @@ internal static class CliBootstrap
     {
         var cliAppBuilder = Host.CreateApplicationBuilder(args);
 
-        var cliOptions = new PasswordTrainerOptions();
-        cliAppBuilder.Configuration.GetSection(PasswordTrainerOptions.SectionName).Bind(cliOptions);
-
         cliAppBuilder.Services
             .AddSingleton<IConsole, SystemConsole>()
             .AddSingleton<IFile, SystemFile>()
+            .AddSingleton<ISecretsEncryption, AesGcmSecretsEncryption>()
             .AddHostedService<SecretInitializationWorker>()
             .AddOptions<PasswordTrainerOptions>()
             .Bind(cliAppBuilder.Configuration.GetSection(PasswordTrainerOptions.SectionName))
@@ -25,9 +21,6 @@ internal static class CliBootstrap
             .Validate(opts => Directory.Exists(opts.SecretsPath), "SecretsPath must exist")
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        cliAppBuilder.Services.AddDataProtection()
-            .PersistKeysToFileSystem(new DirectoryInfo(cliOptions.DataPath))
-            .SetApplicationName("PasswordTrainer");
         cliAppBuilder.Logging.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
 
         await cliAppBuilder.Build().RunAsync();
