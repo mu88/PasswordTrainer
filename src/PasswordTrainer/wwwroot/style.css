@@ -38,6 +38,11 @@ button:hover {
   background-color: #005F99;
 }
 
+button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
 #result {
   margin-top: 1rem;
   font-weight: bold;

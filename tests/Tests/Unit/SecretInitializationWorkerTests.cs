@@ -42,6 +42,60 @@ public class SecretInitializationWorkerTests
     public void TearDown() => _sut?.Dispose();
 
     [Test]
+    public async Task ExecuteAsync_CtrlCDuringPin_ShouldStopApplicationWithoutWritingAnyFiles()
+    {
+        // Arrange
+        _file.Exists(Arg.Any<string>()).Returns(false);
+        _console.ReadKey(true).Returns(CtrlC());
+
+        // Act
+        await _sut.StartAsync(CancellationToken.None);
+        await _sut.ExecuteTask!;
+
+        // Assert
+        _lifetime.Received(1).StopApplication();
+        await _file.DidNotReceive().WriteAllTextAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _file.DidNotReceive().WriteAllBytesAsync(Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task ExecuteAsync_ReadSecretFromConsole_DeleteKeyRemovesLastChar()
+    {
+        // Arrange
+        _file.Exists(Arg.Any<string>()).Returns(false);
+        _console.ReadKey(true).Returns(
+            KeyInfo('1'),
+            KeyInfo('2'),
+            Delete(),    // erase '2' → buffer: "1"
+            KeyInfo('3'),
+            Enter(),     // PIN: 13
+            KeyInfo('p'),
+            Enter());
+        _console.ReadLine().Returns("1", "my-id");
+
+        var capturedPepper = Array.Empty<byte>();
+        _file.When(f => f.WriteAllBytesAsync(
+                Path.Combine(SecretsPath, "pepper_secret"), Arg.Any<byte[]>(), Arg.Any<CancellationToken>()))
+            .Do(ci => capturedPepper = ci.ArgAt<byte[]>(1));
+        var capturedPinHash = string.Empty;
+        _file.When(f => f.WriteAllTextAsync(
+                Path.Combine(SecretsPath, "app_pin_hash"), Arg.Any<string>(), Arg.Any<CancellationToken>()))
+            .Do(ci => capturedPinHash = ci.ArgAt<string>(1));
+
+        // Act
+        await _sut.StartAsync(CancellationToken.None);
+        await _sut.ExecuteTask!;
+
+        // Assert
+        _lifetime.Received(1).StopApplication();
+        capturedPepper.Should().NotBeEmpty();
+        capturedPinHash.Should().NotBeNullOrEmpty();
+        Argon2.Verify(capturedPinHash, Encoding.UTF8.GetBytes("13"), capturedPepper)
+            .Should().BeTrue("DEL must remove the previous character, leaving PIN '13'");
+        _console.Received(1).Write("\b \b");
+    }
+
+    [Test]
     public async Task ExecuteAsync_WithValidInputAndNoPepperFile_ShouldGenerateAndWritePepperAndCallStopApplication()
     {
         // Arrange
@@ -272,6 +326,12 @@ public class SecretInitializationWorkerTests
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("ID must not be empty");
     }
+
+    private static ConsoleKeyInfo CtrlC() =>
+        new('\0', ConsoleKey.C, shift: false, alt: false, control: true);
+
+    private static ConsoleKeyInfo Delete() =>
+        new('\0', ConsoleKey.Delete, shift: false, alt: false, control: false);
 
     private static ConsoleKeyInfo KeyInfo(char c) =>
         new(c, ConsoleKey.A, shift: false, alt: false, control: false);

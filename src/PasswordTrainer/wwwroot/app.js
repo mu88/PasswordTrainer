@@ -1,5 +1,6 @@
 const form = document.getElementById("form");
 const result = document.getElementById("result");
+const submitButton = form.querySelector("button[type='submit']");
 
 function toBase64(bytes) {
   let binary = '';
@@ -10,6 +11,9 @@ function toBase64(bytes) {
 form.addEventListener("submit", async e => {
   e.preventDefault();
   result.textContent = "";
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Checking…";
 
   const encoder = new TextEncoder();
   const pin = document.getElementById("pin").value;
@@ -46,6 +50,8 @@ form.addEventListener("submit", async e => {
     result.textContent = "⚠️ Connection error";
     console.error(err);
   } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Check Password";
     document.getElementById("pw").value = "";
     document.getElementById("id").value = "";
     document.getElementById("id").focus();
