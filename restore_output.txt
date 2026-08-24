@@ -1,0 +1,3 @@
+  Determining projects to restore...
+  Restored D:\Development\Mirko\GitHub\PasswordTrainer\__worktrees__\fix-sshnet\src\PasswordTrainer\PasswordTrainer.csproj (in 1,14 sec).
+  Restored D:\Development\Mirko\GitHub\PasswordTrainer\__worktrees__\fix-sshnet\tests\Tests\Tests.csproj (in 1,23 sec).
