@@ -122,8 +122,8 @@ public class SystemTests
                 "/p:DoNotApplyGitHubScope=true"
             ])
             .ExecuteBufferedAsync(cancellationToken);
-        buildResult.IsSuccess.Should().BeTrue();
         Console.WriteLine(buildResult.StandardOutput);
+        buildResult.IsSuccess.Should().BeTrue();
     }
 
     private static Uri GetAppBaseAddress(IContainer container) => new($"http://{container.Hostname}:{container.GetMappedPublicPort(8080)}{SubPath}");
@@ -159,5 +159,5 @@ public class SystemTests
     private static string GetRootPath() => Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? throw new NullReferenceException();
 
     [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Okay for me")]
-    private static string GenerateContainerImageTag() => $"system-test-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+    private static string GenerateContainerImageTag() => $"0.0.0-system-test-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
 }
