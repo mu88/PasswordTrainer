@@ -1,78 +1,37 @@
-﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
-using CliWrap;
-using CliWrap.Buffered;
-using Docker.DotNet;
-using Docker.DotNet.Models;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using FluentAssertions;
-using NUnit.Framework.Interfaces;
+using mu88.Shared.Testing.Docker;
+using mu88.Shared.Testing.SystemTests;
+using NUnit.Framework;
 using PasswordTrainer;
 
 namespace Tests.System;
 
 [Category("System")]
-public class SystemTests
+public class SystemTests : SystemTestsBase
 {
-    private const string SubPath = "/trainer";
-    private CancellationTokenSource _cancellationTokenSource;
-    private CancellationToken _cancellationToken;
-    private DockerClient _dockerClient;
-    private IContainer? _container;
-
-    [SetUp]
-    public void Setup()
-    {
-        _cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-        _cancellationToken = _cancellationTokenSource.Token;
-        _dockerClient = new DockerClientBuilder().Build();
-    }
-
-    [TearDown]
-    public async Task Teardown()
-    {
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GITHUB_ACTIONS")))
-        {
-            return; // no need to clean up on GitHub Actions runners
-        }
-
-        // If the test passed, clean up the container and image. Otherwise, keep them for investigation.
-        if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Passed && _container is not null)
-        {
-            await _container.StopAsync(_cancellationToken);
-            await _container.DisposeAsync();
-            await _dockerClient.Images.DeleteImageAsync(_container.Image.FullName, new ImageDeleteParameters { Force = true }, _cancellationToken);
-        }
-
-        _dockerClient.Dispose();
-        _cancellationTokenSource.Dispose();
-    }
+    protected override string SubPath => "/trainer";
 
     [Test]
-    [SuppressMessage("IDisposableAnalyzers.Correctness", "IDISP014:Use a single instance of HttpClient", Justification = "Just a single test, not a perf issue")]
     public async Task AppRunningInDocker_ShouldBeHealthy()
     {
         // Arrange
-        var containerImageTag = GenerateContainerImageTag();
-        await BuildDockerImageOfAppAsync(containerImageTag, _cancellationToken);
-        _container = await StartAppContainerAsync(containerImageTag, _cancellationToken);
-        var httpClient = new HttpClient { BaseAddress = GetAppBaseAddress(_container) };
+        var containerImageTag = DockerImageBuilder.GenerateContainerImageTag();
+        await BuildDockerImageOfAppAsync(containerImageTag, CancellationToken);
+        Container = await StartAppContainerAsync(containerImageTag, CancellationToken);
 
         // Act
-        var healthCheckResponse = await httpClient.GetAsync("healthz", _cancellationToken);
-        var appResponse = await httpClient.GetAsync("/", _cancellationToken);
         var passwordCheckResponse =
-            await httpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", Convert.ToBase64String("helloworld"u8.ToArray())), _cancellationToken);
-        var healthCheckToolResult = await _container.ExecAsync(["dotnet", "/app/mu88.HealthCheck.dll", $"http://127.0.0.1:8080{SubPath}/healthz"], _cancellationToken);
+            await HttpClient.PostAsJsonAsync("/check", new CheckRequest("1234", "systemtest", Convert.ToBase64String("helloworld"u8.ToArray())), CancellationToken);
 
         // Assert
-        await LogsShouldNotContainWarningsAsync(_container, _cancellationToken);
-        await HealthCheckShouldBeHealthyAsync(healthCheckResponse, _cancellationToken);
-        await AppShouldRunAsync(appResponse, _cancellationToken);
+        await LogsShouldNotContainWarningsAsync(CancellationToken);
+        await HealthCheckShouldSucceedAsync(CancellationToken);
+        await AppShouldRunAsync(CancellationToken, "Password Trainer");
         passwordCheckResponse.Should().Be200Ok();
-        healthCheckToolResult.ExitCode.Should().Be(0);
     }
 
     private static async Task<IContainer> StartAppContainerAsync(string imageTag, CancellationToken cancellationToken)
@@ -90,7 +49,7 @@ public class SystemTests
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
             .WithEnvironment("Trainer__DataPath", "/data")
             .WithEnvironment("Trainer__SecretsPath", "/secrets")
-            .WithEnvironment("Trainer__PathBase", SubPath)
+            .WithEnvironment("Trainer__PathBase", "/trainer")
             .WithPortBinding(8080, true)
             .WithBindMount(secretsPath, "/secrets", AccessMode.ReadOnly)
             .WithBindMount(dataPath, "/data", AccessMode.ReadOnly)
@@ -102,62 +61,12 @@ public class SystemTests
         return container;
     }
 
-    private static async Task BuildDockerImageOfAppAsync(
-        string containerImageTag,
-        CancellationToken cancellationToken)
+    private static async Task BuildDockerImageOfAppAsync(string containerImageTag, CancellationToken cancellationToken)
     {
         var rootDirectory = GetRootPath();
         var projectFile = Path.Join(rootDirectory, "src", "PasswordTrainer", "PasswordTrainer.csproj");
-        var buildResult = await Cli.Wrap("dotnet")
-            .WithArguments([
-                "publish",
-                $"{projectFile}",
-                "--os",
-                "linux",
-                "--arch",
-                "amd64",
-                "/t:PublishContainersForMultipleFamilies",
-                $"/p:ReleaseVersion={containerImageTag}",
-                "/p:IsRelease=false",
-                "/p:DoNotApplyGitHubScope=true"
-            ])
-            .ExecuteBufferedAsync(cancellationToken);
-        Console.WriteLine(buildResult.StandardOutput);
-        buildResult.IsSuccess.Should().BeTrue();
-    }
-
-    private static Uri GetAppBaseAddress(IContainer container) => new($"http://{container.Hostname}:{container.GetMappedPublicPort(8080)}{SubPath}");
-
-    private static async Task AppShouldRunAsync(HttpResponseMessage appResponse, CancellationToken cancellationToken)
-    {
-        appResponse.Should().Be200Ok();
-        (await appResponse.Content.ReadAsStringAsync(cancellationToken))
-            .Should()
-            .Contain("<title>Password Trainer</title>");
-    }
-
-    private static async Task HealthCheckShouldBeHealthyAsync(
-        HttpResponseMessage healthCheckResponse,
-        CancellationToken cancellationToken)
-    {
-        healthCheckResponse.Should().Be200Ok();
-        (await healthCheckResponse.Content.ReadAsStringAsync(cancellationToken))
-            .Should()
-            .Be("Healthy");
-    }
-
-    private static async Task LogsShouldNotContainWarningsAsync(
-        IContainer container,
-        CancellationToken cancellationToken)
-    {
-        var (stdout, stderr) = await container.GetLogsAsync(ct: cancellationToken);
-        Console.WriteLine(stdout);
-        Console.WriteLine(stderr);
-        stdout.Should().NotContain("warn:");
+        await DockerImageBuilder.BuildAsync(projectFile, containerImageTag, "passwordtrainer", rootDirectory, cancellationToken);
     }
 
     private static string GetRootPath() => Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName ?? throw new NullReferenceException();
-
-    [SuppressMessage("Design", "MA0076:Do not use implicit culture-sensitive ToString in interpolated strings", Justification = "Okay for me")]
-    private static string GenerateContainerImageTag() => $"0.0.0-system-test-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
 }
