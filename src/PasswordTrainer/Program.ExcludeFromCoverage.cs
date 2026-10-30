@@ -5,6 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 // PasswordCheckService and SecretInitializationWorker, both of which are fully covered.
 // The CLI bootstrap path is separately excluded via CliBootstrap's [ExcludeFromCodeCoverage].
 [ExcludeFromCodeCoverage]
-internal partial class Program // NOSONAR: top-level statements mandate global namespace (S3903) and non-static class (S1118)
-{
-}
+#pragma warning disable SA1106 // StyleCopAnalyzers misidentifies the C# 12 semicolon-bodied type declaration below as an empty statement
+internal partial class Program; // NOSONAR: top-level statements mandate global namespace (S3903) and non-static class (S1118)
+#pragma warning restore SA1106

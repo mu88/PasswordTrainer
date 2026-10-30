@@ -311,6 +311,33 @@ public class SecretInitializationWorkerTests
     }
 
     [Test]
+    public async Task ExecuteAsync_CtrlCDuringPassword_ShouldStopApplicationWithoutWritingSecrets()
+    {
+        // Arrange
+        _file.Exists(Arg.Any<string>()).Returns(false);
+        _console.ReadKey(true).Returns(
+            KeyInfo('1'),
+            KeyInfo('2'),
+            KeyInfo('3'),
+            KeyInfo('4'),
+            Enter(), // PIN: 1234
+            CtrlC()); // Ctrl+C while entering the password
+        _console.ReadLine().Returns("1", "my-id");
+
+        // Act
+        await _sut.StartAsync(CancellationToken.None);
+        await _sut.ExecuteTask!;
+
+        // Assert
+        _lifetime.Received(1).StopApplication();
+        await _file.DidNotReceive().WriteAllTextAsync(
+            Path.Combine(DataPath, "secrets.json"),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+        _secretsEncryption.DidNotReceive().Encrypt(Arg.Any<byte[]>(), Arg.Any<string>());
+    }
+
+    [Test]
     public async Task ExecuteAsync_WithNullIdFromConsole_ShouldThrowInvalidOperationException()
     {
         // Arrange — ReadLine returns null for the ID slot, triggering the null-guard
