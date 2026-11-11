@@ -7,6 +7,8 @@
   <ItemGroup>
     <PackageReference Include="CliWrap" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <!-- Direct test-only reference mitigates GHSA-6527-9fp8-r4x6 in FluentAssertions.Web.v8's transitive dependency. Remove when the upstream dependency resolves Microsoft.AspNetCore.WebUtilities to 2.3.14 or later and the vulnerable lockfile entry is gone. -->
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
 
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="FluentAssertions.Web.v8" />
