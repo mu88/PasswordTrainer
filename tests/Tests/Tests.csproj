@@ -7,9 +7,6 @@
   <ItemGroup>
     <PackageReference Include="CliWrap" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <!-- TEMP-PIN: GHSA-6527-9fp8-r4x6. Direct test-only reference mitigates the transitive vulnerability. Remove when upstream resolves a safe version and the vulnerable lockfile entry is gone. -->
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
-
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="FluentAssertions.Web.v8" />
     <PackageReference Include="Isopoh.Cryptography.Argon2" />
