@@ -114,6 +114,23 @@ public class PasswordCheckServiceTests
     }
 
     [Test]
+    public async Task CheckAsync_WithNullSecretsStore_ReturnsInvalidCredentials()
+    {
+        // Arrange
+        _secretsEncryption.Decrypt(Arg.Any<byte[]>(), EncryptedSecretsFileContent).Returns("null");
+        var request = new CheckRequest(ValidPin, ValidId, ValidPasswordBase64);
+
+        // Act
+        var result = await _sut.CheckAsync(request, CancellationToken.None);
+
+        // Assert
+        result.Should().BeAssignableTo<IStatusCodeHttpResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+        result.Should().BeAssignableTo<IValueHttpResult>()
+            .Which.Value.Should().Be("Invalid credentials");
+    }
+
+    [Test]
     public async Task CheckAsync_WithWrongPassword_ReturnsBadRequest()
     {
         // Arrange

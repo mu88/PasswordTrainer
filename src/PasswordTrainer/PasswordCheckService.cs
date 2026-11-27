@@ -31,7 +31,7 @@ internal sealed partial class PasswordCheckService
     {
         var validationContext = new ValidationContext(request);
         var validationResults = new List<ValidationResult>();
-        if (!Validator.TryValidateObject(request, validationContext, validationResults, true))
+        if (!await Validator.TryValidateObjectAsync(request, validationContext, validationResults, true, cancellationToken))
         {
             return Results.BadRequest(validationResults.Select(result => result.ErrorMessage));
         }
@@ -60,9 +60,8 @@ internal sealed partial class PasswordCheckService
                 return Results.Problem("Server error");
             }
 
-            var store = JsonSerializer.Deserialize<Dictionary<string, string>>(decrypted)
-                        ?? new Dictionary<string, string>(StringComparer.Ordinal);
-            if (!store.TryGetValue(request.Id, out var expectedPasswordHash))
+            var store = JsonSerializer.Deserialize<Dictionary<string, string>>(decrypted);
+            if (store is null || !store.TryGetValue(request.Id, out var expectedPasswordHash))
             {
                 return Results.BadRequest(InvalidCredentials);
             }
