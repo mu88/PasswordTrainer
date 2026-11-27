@@ -18,6 +18,9 @@
     "ignore-methods": [
       "logger.*",
       "Logger.*"
-    ]
+    ],
+    "thresholds": {
+      "break": 1
+    }
   }
 }
